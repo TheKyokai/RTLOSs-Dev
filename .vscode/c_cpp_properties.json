@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "STM32",
+            "compilerPath": "C:/Users/dulek/GNU MCU/arm-none-eabi-gcc-10.2.1-1.1/bin/arm-none-eabi-gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "defines": [
+                "USE_HAL_DRIVER",
+                "STM32F103x6"
+            ],
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "intelliSenseMode": "windows-gcc-arm"
+        }
+    ],
+    "version": 4
+}
