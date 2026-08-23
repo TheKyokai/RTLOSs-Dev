@@ -37,7 +37,6 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Core/Src/main.c \
-Core/Src/freertos.c \
 Core/Src/stm32f1xx_it.c \
 Core/Src/stm32f1xx_hal_msp.c \
 Core/Src/stm32f1xx_hal_timebase_tim.c \
@@ -54,17 +53,18 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
-Core/Src/system_stm32f1xx.c \
-Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
-Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
-Middlewares/Third_Party/FreeRTOS/Source/list.c \
-Middlewares/Third_Party/FreeRTOS/Source/queue.c \
-Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
-Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c  
+Core/Src/system_stm32f1xx.c 
+# Core/Src/freertos.c \
+# Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
+# Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+# Middlewares/Third_Party/FreeRTOS/Source/list.c \
+# Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+# Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
+# Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+# Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+# Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
+# Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+# Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c  
 
 # ASM sources
 ASM_SOURCES =  \
@@ -125,9 +125,8 @@ C_INCLUDES =  \
 -ICore/Inc \
 -IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -IDrivers/STM32F1xx_HAL_Driver/Inc \
--IMiddlewares/Third_Party/FreeRTOS/Source/include \
--IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
--IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 \
+-IMiddlewares/Third_Party/RTLOSs/kernel/inc \
+-IMiddlewares/Third_Party/RTLOSs/portable/ARM_CORTEX_M3/inc \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
 -IDrivers/CMSIS/Include
 

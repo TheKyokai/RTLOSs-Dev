@@ -10,7 +10,9 @@
                 "STM32F103x6"
             ],
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/Middlewares/Third_Party/RTLOSs/kernel/inc",
+                "${workspaceFolder}/Middlewares/Third_Party/RTLOSs/portable/ARM_CORTEX_M3/inc"
             ],
             "intelliSenseMode": "windows-gcc-arm"
         }
