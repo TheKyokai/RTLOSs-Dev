@@ -11,7 +11,8 @@ typedef struct Scheduler
 } Scheduler;
 
 
-void init_Scheduler();
+void Scheduler_Init();
+void Scheduler_Start();
 TCB* Scheduler_Get();
 void Scheduler_Put(TCB* tcb);
 

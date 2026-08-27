@@ -64,3 +64,13 @@ int Task_Delete(TCB* tcb)
         return 1;
     return 0;
 }
+
+
+void Idle_Task_Function(void * dummy)
+{
+    while (1)
+    {
+        // Cleanup memory => TODO 
+        __asm__ volatile ("wfi"); // Wait for interrupt => Move to port??
+    }
+}

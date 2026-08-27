@@ -1,13 +1,20 @@
-#include "../inc/scheduler.h"
-#include "../inc/task.h"
-
+#include "scheduler.h"
+#include "task.h"
+#include "port.h"
 
 static Scheduler scheduler;
+static Task_t idle_task_handle;
 
-
-void init_Scheduler()
+void Scheduler_Init()
 {
     List_Init(&scheduler.list);
+}
+
+void Scheduler_Start()
+{
+    Task_Create_Task(&idle_task_handle, Idle_Task_Function, NULL, NULL, NULL, NULL);
+    List_Insert_Back(&scheduler.list, &idle_task_handle->list_node);
+    Start_Task_Execution();
 }
 
 
