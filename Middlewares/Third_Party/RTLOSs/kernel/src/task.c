@@ -4,6 +4,7 @@
 #include "port.h"
 
 
+
 TCB* TCB_Current = NULL;
 
 void TCB_Switch_Current()
@@ -51,6 +52,8 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
 
     Init_Task_Stack(created_TCB);
 
+    Scheduler_Put(created_TCB);
+
     *handle = created_TCB;
     return 0;
 }
@@ -66,11 +69,18 @@ int Task_Delete(TCB* tcb)
 }
 
 
+int Task_Yield()
+{
+    Port_Yield();
+    return 0;
+}
+
 void Idle_Task_Function(void * dummy)
 {
     while (1)
     {
-        // Cleanup memory => TODO 
-        __asm__ volatile ("wfi"); // Wait for interrupt => Move to port??
+        // Cleanup memory => TODO
+        // __asm__ volatile ("wfi"); // Wait for interrupt => Move to port??
+        Port_Yield();
     }
 }

@@ -1,6 +1,6 @@
 #include "port.h"
 #include "task.h"
-
+#include "stm32f1xx.h"
 
 
 void PendSV_Handler( void ) __attribute__(( naked ));
@@ -98,3 +98,7 @@ void PendSV_Handler( void )
 
 
 
+void Port_Yield()
+{
+    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+}

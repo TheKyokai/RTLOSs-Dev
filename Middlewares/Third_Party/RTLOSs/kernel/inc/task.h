@@ -50,6 +50,7 @@ void TCB_Task_Function_Wrapper(TCB* tcb);
 
 int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_param, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags);
 int Task_Delete(TCB* tcb);
+int Task_Yield();
 
 void Idle_Task_Function(void * dummy);
 
