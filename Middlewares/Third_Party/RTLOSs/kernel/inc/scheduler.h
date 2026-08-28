@@ -1,14 +1,15 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include "../inc/list.h"
+#include "list.h"
+#include "task.h"
 
-struct TCB;
+typedef struct Scheduler Scheduler;
 
-typedef struct Scheduler
+struct Scheduler
 {
     List list;
-} Scheduler;
+};
 
 
 void Scheduler_Init();

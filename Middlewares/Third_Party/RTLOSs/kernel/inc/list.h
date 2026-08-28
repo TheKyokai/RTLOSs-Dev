@@ -1,16 +1,19 @@
 #ifndef LIST_H
 #define LIST_H
 
-typedef struct List_Node
+typedef struct List_Node List_Node;
+typedef struct List List;
+
+struct List_Node
 {
     void* data;
     List_Node *prev, *next;
-} List_Node;
+};
 
-typedef struct List
+struct List
 {
     List_Node *head, *tail;
-} List;
+};
 
 typedef int List_Comparison_Function(void* first, List_Node* node);
 

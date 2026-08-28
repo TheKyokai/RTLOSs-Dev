@@ -42,6 +42,7 @@ struct TCB
 
 typedef TCB* Task_t;
 
+extern TCB* TCB_Current;
 #define Task_Current_Task TCB_Current
 
 void TCB_Switch_Current();

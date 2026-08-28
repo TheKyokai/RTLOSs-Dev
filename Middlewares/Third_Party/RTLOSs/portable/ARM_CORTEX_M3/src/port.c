@@ -49,7 +49,7 @@ void SVC_Handler( void )
 {
     __asm__ volatile
     (
-        "   ldr r2, PendSV_TCB_Current              \n"
+        "   ldr r2, =TCB_Current              \n"
         "   ldr r3, [r2]                            \n"     // Load new SP
         "   ldr r0, [r3]                            \n"     
         "   ldmia r0!, {r4-r11}                     \n"
@@ -61,9 +61,6 @@ void SVC_Handler( void )
         "                                           \n"
         "   orr r14, #0xD                           \n"     // Switch to Thread mode - Setting lowest LR nibble to D
         "   bx r14                                  \n"     // LR return
-        "                                           \n"
-        "   .align 4                                \n"
-        "   SVC_TCB_Current: .word TCB_Current      \n"     // ARM literal 'pool'
     );
 }
 
@@ -75,7 +72,7 @@ void PendSV_Handler( void )
         "   mrs r0, psp                             \n"
         "   isb                                     \n"
         "                                           \n"
-        "   ldr r2, PendSV_TCB_Current              \n"
+        "   ldr r2, =TCB_Current              \n"
         "   ldr r3, [r2]                            \n"     // Load current_TCB saved_pc
         "   stmdb r0!, {r4-r11}                     \n"     // Store non-saved register of the current task
         "   str r0, [r3]                            \n"     // Save sp of the current task
@@ -95,9 +92,6 @@ void PendSV_Handler( void )
         "   isb                                     \n"
         "                                           \n"
         "   bx r14                                  \n"     // LR return
-        "                                           \n"
-        "   .align 4                                \n"
-        "   PendSV_TCB_Current: .word TCB_Current   \n"     // ARM literal 'pool'
         ::"i"(5) // Max syscall priority => Make macro later
     );
 }
