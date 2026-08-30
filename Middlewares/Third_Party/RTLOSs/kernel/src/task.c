@@ -2,15 +2,18 @@
 #include "heap.h"
 #include "scheduler.h"
 #include "port.h"
+#include "RTLOSs_config.h"
 
 
 
 TCB* TCB_Current = NULL;
+static uint32_t Current_TCB_Tick_Count = 0;
 
 void TCB_Switch_Current()
 {
     Scheduler_Put(TCB_Current);
     TCB_Current = Scheduler_Get();
+    Current_TCB_Tick_Count = 0;
 }
 
 void TCB_Task_Function_Wrapper(TCB* tcb)
@@ -50,7 +53,7 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
     created_TCB->list_node.prev = NULL;
     created_TCB->list_node.data = (void *) created_TCB;
 
-    Init_Task_Stack(created_TCB);
+    Port_Init_Task_Stack(created_TCB);
 
     Scheduler_Put(created_TCB);
 
@@ -80,7 +83,14 @@ void Idle_Task_Function(void * dummy)
     while (1)
     {
         // Cleanup memory => TODO
-        // __asm__ volatile ("wfi"); // Wait for interrupt => Move to port??
-        Port_Yield();
+        __asm__ volatile ("wfi"); // Wait for interrupt => Move to port??
     }
+}
+
+int Task_SysTick_Tick()
+{
+    ++Current_TCB_Tick_Count;
+    if (Current_TCB_Tick_Count >= config_TASK_TICK_TIMESLICE)
+        return 1;
+    return 0;
 }

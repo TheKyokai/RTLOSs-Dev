@@ -9,8 +9,8 @@
 #define INITIAL_LR 0x00000000 // TODO Update for debugging
 
 
-void Init_Task_Stack(TCB* tcb);
-void Start_Task_Execution();
+void Port_Init_Task_Stack(TCB* tcb);
+void Port_Start_Scheduler();
 void Port_Yield();
 
 #endif

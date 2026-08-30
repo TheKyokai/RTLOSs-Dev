@@ -1,16 +1,16 @@
 #include "port.h"
 #include "task.h"
 #include "stm32f1xx.h"
+#include "RTLOSs_config.h"
 
 
 void PendSV_Handler( void ) __attribute__(( naked ));
-void Start_Task_Execution() __attribute__(( naked ));
+static void Start_Task_Execution() __attribute__(( naked ));
 void SVC_Handler( void ) __attribute__(( naked ));
 
 
 
-
-void Init_Task_Stack(TCB* tcb)
+void Port_Init_Task_Stack(TCB* tcb)
 {
     uint32_t* tcb_sp = tcb->saved_sp;
     tcb_sp--;
@@ -27,7 +27,7 @@ void Init_Task_Stack(TCB* tcb)
 
 
 // Task based execution start - Abandons main thread
-void Start_Task_Execution()
+static void Start_Task_Execution()
 {
     __asm__ volatile
     (
@@ -92,13 +92,67 @@ void PendSV_Handler( void )
         "   isb                                     \n"
         "                                           \n"
         "   bx r14                                  \n"     // LR return
-        ::"i"(5) // Max syscall priority => Make macro later
+        ::"i"(5 << 4) // Max syscall priority => Make macro later
     );
 }
 
 
+inline static void Port_Set_BASEPRI(uint32_t pri)
+{
+    uint32_t basepri_reg;
+    __asm__ volatile 
+    (
+        "mov %0, %1         \n"
+        "msr basepri, %0    \n"
+        "isb                \n"
+        "dsb                \n"
+        : "=r"(basepri_reg) : "i"(pri << 4)     // BASEPRI bits 7:4 are used - 3:0 reserved
+    );
+}
 
-void Port_Yield()
+inline static void Port_Enable_Interrupts()
+{
+    Port_Set_BASEPRI(0);
+}
+
+inline static void Port_Disable_Interrupts()
+{
+    Port_Set_BASEPRI(5);
+}
+
+
+static void Port_Start_Kernel_Timer()
+{
+    SysTick->LOAD = ( SystemCoreClock / config_RTLOSS_TICK_RATE_HZ) - 1U;
+    SysTick->VAL = 0U;
+    
+    SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_CLKSOURCE_Msk;
+}
+
+
+void Port_Start_Scheduler()
+{
+    
+    Port_Start_Kernel_Timer();
+    
+    Start_Task_Execution();
+    // Control should never reach this
+}
+
+
+
+// RTOS timer interrupt
+void SysTick_Handler( void )
+{
+    Port_Disable_Interrupts();
+    if (Task_SysTick_Tick())
+        Port_Yield();       // Context Switch will occur after enabling interrupts
+    Port_Enable_Interrupts();
+}
+
+
+
+inline void Port_Yield()
 {
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }

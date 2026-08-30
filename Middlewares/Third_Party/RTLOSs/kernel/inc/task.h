@@ -54,4 +54,6 @@ int Task_Yield();
 
 void Idle_Task_Function(void * dummy);
 
+int Task_SysTick_Tick();
+
 #endif

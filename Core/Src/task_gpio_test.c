@@ -8,8 +8,6 @@ void Task_Pin_Toggler_C7(void* dummy)
     {
         HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
         for (int i=0; i<1000000; i++);
-        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
-        Task_Yield();
     }
 }
 
@@ -19,9 +17,7 @@ void Task_Pin_Toggler_C8(void* dummy)
     while (1)
     {
         HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-        for (int i=0; i<1000000; i++);
-        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-        Task_Yield();
+        for (int i=0; i<250000; i++);
     }
 }
 
