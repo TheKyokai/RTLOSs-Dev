@@ -4,6 +4,8 @@
 
 #define config_TASK_TICK_TIMESLICE 3
 
-#define config_RTLOSS_TICK_RATE_HZ 1000U
+#define config_CPU_CLOCK_HZ 8000000UL
+#define config_TICK_HZ 1000UL
+
 
 #endif

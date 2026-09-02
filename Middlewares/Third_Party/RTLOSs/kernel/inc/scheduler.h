@@ -8,7 +8,8 @@ typedef struct Scheduler Scheduler;
 
 struct Scheduler
 {
-    List list;
+    List ready_list;
+    List asleep_list;
 };
 
 
@@ -16,5 +17,7 @@ void Scheduler_Init();
 void Scheduler_Start();
 TCB* Scheduler_Get();
 void Scheduler_Put(TCB* tcb);
+
+void Scheduler_Sleep_Update();
 
 #endif

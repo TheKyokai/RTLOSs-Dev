@@ -1,5 +1,6 @@
 #include "port.h"
 #include "task.h"
+#include "scheduler.h"
 #include "stm32f1xx.h"
 #include "RTLOSs_config.h"
 
@@ -97,7 +98,7 @@ void PendSV_Handler( void )
 }
 
 
-inline static void Port_Set_BASEPRI(uint32_t pri)
+inline void Port_Set_BASEPRI(uint32_t pri)
 {
     uint32_t basepri_reg;
     __asm__ volatile 
@@ -110,12 +111,12 @@ inline static void Port_Set_BASEPRI(uint32_t pri)
     );
 }
 
-inline static void Port_Enable_Interrupts()
+inline void Port_Enable_Interrupts()
 {
     Port_Set_BASEPRI(0);
 }
 
-inline static void Port_Disable_Interrupts()
+inline void Port_Disable_Interrupts()
 {
     Port_Set_BASEPRI(5);
 }
@@ -123,7 +124,7 @@ inline static void Port_Disable_Interrupts()
 
 static void Port_Start_Kernel_Timer()
 {
-    SysTick->LOAD = ( SystemCoreClock / config_RTLOSS_TICK_RATE_HZ) - 1U;
+    SysTick->LOAD = ( config_CPU_CLOCK_HZ / config_TICK_HZ) - 1U;
     SysTick->VAL = 0U;
     
     SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_CLKSOURCE_Msk;
@@ -145,8 +146,10 @@ void Port_Start_Scheduler()
 void SysTick_Handler( void )
 {
     Port_Disable_Interrupts();
+    
     if (Task_SysTick_Tick())
         Port_Yield();       // Context Switch will occur after enabling interrupts
+    
     Port_Enable_Interrupts();
 }
 

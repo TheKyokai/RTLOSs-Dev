@@ -5,13 +5,16 @@
 #include "RTLOSs_config.h"
 
 
+void Scheduler_Sleep_Put(TCB* tcb, uint32_t period); // Private declaration -> used only in this file
+
 
 TCB* TCB_Current = NULL;
 static uint32_t Current_TCB_Tick_Count = 0;
 
 void TCB_Switch_Current()
 {
-    Scheduler_Put(TCB_Current);
+    if (TCB_Current->status == TASK_READY)
+        Scheduler_Put(TCB_Current);
     TCB_Current = Scheduler_Get();
     Current_TCB_Tick_Count = 0;
 }
@@ -40,7 +43,7 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
         return 2;
     }
     
-    created_TCB->saved_sp = ( (uint8_t*) sp + HEAP_BLOCK_SIZE );
+    created_TCB->saved_sp = (uint32_t*) ( (uint8_t*) sp + HEAP_BLOCK_SIZE );
 
     created_TCB->task_function = task_function;
     created_TCB->task_param = task_param;
@@ -48,6 +51,7 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
     created_TCB->hook_param = hook_param;
     created_TCB->hook_call_flags = hook_flags;
     created_TCB->status = TASK_READY;
+    created_TCB->sleep_ticks_remaining = 0;
 
     created_TCB->list_node.next = NULL;
     created_TCB->list_node.prev = NULL;
@@ -88,9 +92,21 @@ void Idle_Task_Function(void * dummy)
 }
 
 int Task_SysTick_Tick()
-{
+{   
+    Scheduler_Sleep_Update();
     ++Current_TCB_Tick_Count;
     if (Current_TCB_Tick_Count >= config_TASK_TICK_TIMESLICE)
         return 1;
+    return 0;
+}
+
+int Task_Sleep(uint32_t period)
+{   
+    Port_Disable_Interrupts();
+    
+    Scheduler_Sleep_Put(TCB_Current, period);
+    Task_Yield();   // Will trigger context switch regardless
+    
+    Port_Enable_Interrupts();
     return 0;
 }
