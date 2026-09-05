@@ -75,6 +75,48 @@ void* List_Remove_Back(List* list)
 }
 
 
+void* List_Remove(List* list, List_Node* node)
+{
+    if (!list || !node)
+        return NULL;
+
+    List_Node *current_node = list->head;
+    while (current_node)
+    {
+        if (current_node == node)
+            break;
+        current_node = current_node->next;
+    }
+
+    if (!current_node)
+        return NULL;
+    
+    
+    if (current_node == list->head)
+    {
+        list->head = current_node->next;
+        if (list->head)
+            list->head->prev = NULL;
+    }
+    else if (current_node == list->tail)
+    {
+        list->tail = current_node->prev;
+        if (list->tail)
+            list->tail->next = NULL;
+    }
+    else
+    {
+        current_node->prev->next = current_node->next;
+        current_node->next->prev = current_node->prev;
+    }
+
+    if (!list->head || !list->tail)
+        list->head = list->tail = NULL;
+    
+    current_node->prev = NULL;
+    current_node->next = NULL;
+    return current_node->data;
+}
 
 void* List_Peek_Front(List* list)
 {

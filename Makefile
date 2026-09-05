@@ -58,6 +58,8 @@ Core/Src/rtloss.c \
 Middlewares/Third_Party/RTLOSs/kernel/src/list.c \
 Middlewares/Third_Party/RTLOSs/kernel/src/scheduler.c \
 Middlewares/Third_Party/RTLOSs/kernel/src/task.c \
+Middlewares/Third_Party/RTLOSs/kernel/src/semaphore.c \
+Middlewares/Third_Party/RTLOSs/kernel/src/timer.c \
 Middlewares/Third_Party/RTLOSs/portable/ARM_CORTEX_M3/src/heap.c \
 Middlewares/Third_Party/RTLOSs/portable/ARM_CORTEX_M3/src/port.c \
 Core/Src/gpio.c \
@@ -146,7 +148,8 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
+CFLAGS += -g -gdwarf-2 
+CFLAGS += -fdebug-prefix-map==../
 endif
 
 

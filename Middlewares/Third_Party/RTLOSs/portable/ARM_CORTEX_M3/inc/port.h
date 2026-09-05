@@ -8,7 +8,7 @@
 #define INITIAL_PC_MASK 0xFFFFFFFE
 #define INITIAL_LR 0x00000000 // TODO Update for debugging
 
-
+#define PORT_MAX_TIMEOUT UINT32_MAX
 
 
 void Port_Init_Task_Stack(TCB* tcb);

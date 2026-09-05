@@ -26,6 +26,35 @@ void TCB_Task_Function_Wrapper(TCB* tcb)
     while(1); // Infinite loop while waiting for context switch
 }
 
+int TCB_Initial_Setup(TCB* tcb, void* sp, Task_Function* task_function, void* task_param, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags)
+{
+    if (!tcb || !sp)
+        return 1;
+
+    tcb->saved_sp = (uint32_t*) ( (uint8_t*) sp + HEAP_BLOCK_SIZE ); // TODO => Make stack allocation part of port
+
+    tcb->task_function = task_function;
+    tcb->task_param = task_param;
+    tcb->hook = hook_function;
+    tcb->hook_param = hook_param;
+    tcb->hook_call_flags = hook_flags;
+    tcb->status = TASK_READY;
+    tcb->timeout = 0;
+
+    tcb->list_node.next = NULL;
+    tcb->list_node.prev = NULL;
+    tcb->list_node.data = (void *) tcb;
+
+    tcb->sem_node.next = NULL;
+    tcb->sem_node.prev = NULL;
+    tcb->sem_node.data = (void *) tcb;
+
+    tcb->waited_sem = NULL;
+    tcb->timed_wait = 0;
+
+    Port_Init_Task_Stack(tcb);
+    return 0;
+}
 
 int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_param, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags)
 {
@@ -43,21 +72,31 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
         return 2;
     }
     
-    created_TCB->saved_sp = (uint32_t*) ( (uint8_t*) sp + HEAP_BLOCK_SIZE );
 
-    created_TCB->task_function = task_function;
-    created_TCB->task_param = task_param;
-    created_TCB->hook = hook_function;
-    created_TCB->hook_param = hook_param;
-    created_TCB->hook_call_flags = hook_flags;
-    created_TCB->status = TASK_READY;
-    created_TCB->sleep_ticks_remaining = 0;
+    TCB_Initial_Setup(created_TCB, sp, task_function, task_param, hook_function, hook_param, hook_flags);
+    
+    // created_TCB->saved_sp = (uint32_t*) ( (uint8_t*) sp + HEAP_BLOCK_SIZE ); // TODO => Make stack allocation part of port
 
-    created_TCB->list_node.next = NULL;
-    created_TCB->list_node.prev = NULL;
-    created_TCB->list_node.data = (void *) created_TCB;
+    // created_TCB->task_function = task_function;
+    // created_TCB->task_param = task_param;
+    // created_TCB->hook = hook_function;
+    // created_TCB->hook_param = hook_param;
+    // created_TCB->hook_call_flags = hook_flags;
+    // created_TCB->status = TASK_READY;
+    // created_TCB->timeout = 0;
 
-    Port_Init_Task_Stack(created_TCB);
+    // created_TCB->list_node.next = NULL;
+    // created_TCB->list_node.prev = NULL;
+    // created_TCB->list_node.data = (void *) created_TCB;
+
+    // created_TCB->sem_node.next = NULL;
+    // created_TCB->sem_node.prev = NULL;
+    // created_TCB->sem_node.data = (void *) created_TCB;
+
+    // created_TCB->waited_sem = NULL;
+    // created_TCB->timed_wait = 0;
+
+    // Port_Init_Task_Stack(created_TCB);
 
     Scheduler_Put(created_TCB);
 
@@ -66,7 +105,7 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
 }
 
 
-int Task_Delete(TCB* tcb)
+int Task_Delete(Task_t tcb)
 {
     tcb->status = TASK_DELETED;
     if (tcb == TCB_Current)
@@ -94,6 +133,7 @@ void Idle_Task_Function(void * dummy)
 int Task_SysTick_Tick()
 {   
     Scheduler_Sleep_Update();
+    Semaphore_Tick_Update();
     ++Current_TCB_Tick_Count;
     if (Current_TCB_Tick_Count >= config_TASK_TICK_TIMESLICE)
         return 1;

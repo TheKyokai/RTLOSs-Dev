@@ -1,4 +1,4 @@
-#include "../inc/heap.h"
+#include "heap.h"
 
 
 

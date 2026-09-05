@@ -1,0 +1,37 @@
+#ifndef ENUM_DEFS_H
+#define ENUM_DEFS_H
+
+
+// TASK RELATED
+
+typedef enum TASK_STATUS
+{
+    TASK_READY, 
+    TASK_BLOCKED, 
+    TASK_DELETED
+} TASK_STATUS;
+
+
+
+// SEMAPHORE RELATED
+
+typedef enum SEM_STATUS
+{
+    SEM_NONE,
+    SEM_ACQUIRED,
+    SEM_TIMEOUT,
+    SEM_DEAD,
+    SEM_ERROR
+} SEM_STATUS;
+
+
+// TIMER RELATED
+
+typedef enum TIMER_STATUS
+{
+    TIMER_STARTED,
+    TIMER_STOPPED
+} TIMER_STATUS;
+
+
+#endif

@@ -27,6 +27,8 @@ void List_Insert_Back(List* list, List_Node* node);
 void* List_Remove_Front(List* list);
 void* List_Remove_Back(List* list);
 
+void* List_Remove(List* list, List_Node* node);
+
 void* List_Peek_Front(List* list);
 void* List_Peek_Back(List* list);
 

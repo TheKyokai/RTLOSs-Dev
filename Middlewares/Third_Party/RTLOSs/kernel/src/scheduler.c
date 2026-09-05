@@ -36,8 +36,8 @@ void Scheduler_Sleep_Update()
     if (List_Empty(&scheduler.asleep_list))  return;
 
     TCB* tcb = (TCB*) List_Peek_Front(&scheduler.asleep_list);
-    tcb->sleep_ticks_remaining--;
-    while (tcb && tcb->sleep_ticks_remaining == 0)
+    tcb->timeout--;
+    while (tcb && tcb->timeout == 0)
     {
         List_Remove_Front(&scheduler.asleep_list);
         tcb->status = TASK_READY;
@@ -56,23 +56,23 @@ void Scheduler_Sleep_Put(TCB* tcb, uint32_t period)
     if (!scheduler.asleep_list.head)
     {
         List_Insert_Back(&scheduler.asleep_list, &tcb->list_node);
-        tcb->sleep_ticks_remaining = period;
+        tcb->timeout = period;
         return;
     }
 
     List_Node *current_node = scheduler.asleep_list.head, *prev = NULL;
     uint32_t current_sleep_ticks = 0;
     
-    while (current_node && (current_sleep_ticks + ((TCB*)current_node->data)->sleep_ticks_remaining <= period))
+    while (current_node && (current_sleep_ticks + ((TCB*)current_node->data)->timeout <= period))
     {
-        current_sleep_ticks += ((TCB*)current_node->data)->sleep_ticks_remaining;
+        current_sleep_ticks += ((TCB*)current_node->data)->timeout;
         prev = current_node;
         current_node = current_node->next;
     }
 
 
     // Setting delta for the new node
-    tcb->sleep_ticks_remaining = period - current_sleep_ticks;
+    tcb->timeout = period - current_sleep_ticks;
 
     if (!current_node)
         List_Insert_After(&scheduler.asleep_list, &tcb->list_node, prev);
@@ -80,7 +80,7 @@ void Scheduler_Sleep_Put(TCB* tcb, uint32_t period)
     {
         List_Insert_Before(&scheduler.asleep_list, &tcb->list_node, current_node);
         // Next node delta update
-        if (current_node) ((TCB*)current_node->data)->sleep_ticks_remaining -= tcb->sleep_ticks_remaining;
+        if (current_node) ((TCB*)current_node->data)->timeout -= tcb->timeout;
     }
     
 }   
