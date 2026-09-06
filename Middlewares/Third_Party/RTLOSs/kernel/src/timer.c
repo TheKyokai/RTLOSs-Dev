@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "heap.h"
 #include "scheduler.h"
+#include "RTLOSs_config.h"
 
 
 
@@ -35,7 +36,7 @@ int Timer_Create_Timer(Timer_t* handle, Timer_Function* timer_function, void* ti
     created_timer->period = period;
     created_timer->status = TIMER_STARTED;
 
-    TCB_Initial_Setup(&created_timer->timer_task, sp, Timer_Task_Wrapper, created_timer, NULL, NULL, 0);
+    TCB_Initial_Setup(&created_timer->timer_task, sp, Timer_Task_Wrapper, created_timer, config_TIMER_TASK_PRIORITY, NULL, NULL, 0);
 
     Scheduler_Put(&created_timer->timer_task);
 

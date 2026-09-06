@@ -8,9 +8,9 @@ void List_Init(List* list)
     list->tail = NULL;
 }
 
-inline int List_Empty(List* list)
+int List_Empty(List* list)
 {
-    return list->head == NULL;
+    return !list->head;
 }
 
 void List_Insert_Front(List* list, List_Node* node)

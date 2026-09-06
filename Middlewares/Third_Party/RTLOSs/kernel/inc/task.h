@@ -35,6 +35,9 @@ struct TCB
     TASK_STATUS status;
     
     uint32_t timeout;
+    
+    // Priority for scheduling
+    uint32_t priority;
 
     // Semaphore related
     Semaphore* waited_sem; // Reordering causes proteus fatal error
@@ -52,9 +55,9 @@ extern TCB* TCB_Current;
 
 void TCB_Switch_Current();
 void TCB_Task_Function_Wrapper(TCB* tcb);
-int TCB_Initial_Setup(TCB* tcb, void* sp, Task_Function* task_function, void* task_param, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags);
+int TCB_Initial_Setup(TCB* tcb, void* sp, Task_Function* task_function, void* task_param, uint32_t priority, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags);
 
-int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_param, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags);
+int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_param, uint32_t priority, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags);
 int Task_Delete(Task_t tcb);
 int Task_Yield();
 int Task_Sleep(uint32_t period);

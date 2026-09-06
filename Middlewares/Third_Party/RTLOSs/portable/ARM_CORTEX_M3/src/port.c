@@ -98,7 +98,7 @@ void PendSV_Handler( void )
 }
 
 
-inline void Port_Set_BASEPRI(uint32_t pri)
+static inline void Port_Set_BASEPRI(uint32_t pri)
 {
     uint32_t basepri_reg;
     __asm__ volatile 
@@ -111,12 +111,12 @@ inline void Port_Set_BASEPRI(uint32_t pri)
     );
 }
 
-inline void Port_Enable_Interrupts()
+void Port_Enable_Interrupts()
 {
     Port_Set_BASEPRI(0);
 }
 
-inline void Port_Disable_Interrupts()
+void Port_Disable_Interrupts()
 {
     Port_Set_BASEPRI(5);
 }

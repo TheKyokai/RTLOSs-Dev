@@ -34,7 +34,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-void test_2();
+void test_3();
 
 /* USER CODE END PD */
 
@@ -99,7 +99,7 @@ int main(void)
     // osKernelStart();
 
     RTLOSs_Init();
-    test_2();
+    test_3();
     RTLOSs_Start();
   /* USER CODE END 2 */
 

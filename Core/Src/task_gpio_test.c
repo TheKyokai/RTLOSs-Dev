@@ -58,20 +58,47 @@
 
 
 
-Timer_t timer1, timer2;
+// Timer_t timer1, timer2;
 
 
-void Sleepless_Toggler(void* GPIO_PIN)
+// void Sleepless_Toggler(void* GPIO_PIN)
+// {
+//     HAL_GPIO_TogglePin(GPIOC, (uint16_t) GPIO_PIN);
+// }
+
+
+// void test_2()
+// {
+//     Timer_Create_Timer(&timer1, Sleepless_Toggler, (void*) GPIO_PIN_7, 2000);
+//     Timer_Create_Timer(&timer2, Sleepless_Toggler, (void*) GPIO_PIN_8, 1000);
+// }
+
+Task_t task_high, task_low;
+
+
+void Task_High(void* dummy)
 {
-    HAL_GPIO_TogglePin(GPIOC, (uint16_t) GPIO_PIN);
+    int i;
+    while (1)
+    {
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7);
+        for(i=0;i<1000000;i++);
+    }
 }
 
-
-void test_2()
+void Task_Low(void* dummy)
 {
-    Timer_Create_Timer(&timer1, Sleepless_Toggler, (void*) GPIO_PIN_7, 2000);
-    Timer_Create_Timer(&timer2, Sleepless_Toggler, (void*) GPIO_PIN_8, 1000);
+    int i;
+    while (1)
+    {
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+        for(i=0;i<500000;i++);
+    }
 }
 
-
+void test_3()
+{
+    Task_Create_Task(&task_low, Task_Low, NULL, 5, NULL, NULL, 0);
+    Task_Create_Task(&task_high, Task_High, NULL, 2, NULL, NULL, 0);
+}
 

@@ -3,13 +3,15 @@
 
 #include "list.h"
 #include "task.h"
+#include "RTLOSs_config.h"
 
 typedef struct Scheduler Scheduler;
 
 struct Scheduler
 {
-    List ready_list;
-    List asleep_list;
+    List ready_queues[config_TASK_PRIORITY_COUNT];
+    List asleep_queue;
+    uint32_t ready_bitmap;
 };
 
 

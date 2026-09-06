@@ -5,7 +5,7 @@
 #include "RTLOSs_config.h"
 
 
-void Scheduler_Sleep_Put(TCB* tcb, uint32_t period); // Private declaration -> used only in this file
+void Scheduler_Sleep_Put(TCB* tcb, uint32_t period); // Private declaration
 
 
 TCB* TCB_Current = NULL;
@@ -26,7 +26,7 @@ void TCB_Task_Function_Wrapper(TCB* tcb)
     while(1); // Infinite loop while waiting for context switch
 }
 
-int TCB_Initial_Setup(TCB* tcb, void* sp, Task_Function* task_function, void* task_param, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags)
+int TCB_Initial_Setup(TCB* tcb, void* sp, Task_Function* task_function, void* task_param, uint32_t priority, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags)
 {
     if (!tcb || !sp)
         return 1;
@@ -40,6 +40,7 @@ int TCB_Initial_Setup(TCB* tcb, void* sp, Task_Function* task_function, void* ta
     tcb->hook_call_flags = hook_flags;
     tcb->status = TASK_READY;
     tcb->timeout = 0;
+    tcb->priority = priority;
 
     tcb->list_node.next = NULL;
     tcb->list_node.prev = NULL;
@@ -56,10 +57,13 @@ int TCB_Initial_Setup(TCB* tcb, void* sp, Task_Function* task_function, void* ta
     return 0;
 }
 
-int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_param, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags)
+int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_param, uint32_t priority, Task_Hook_Function* hook_function, void* hook_param, uint8_t hook_flags)
 {
     if (!task_function)
-        return 3;    
+        return 3;
+    
+    if (priority > config_MAX_TASK_PRIORITY)
+        return 4;
     
     TCB* created_TCB = (TCB*) Port_Alloc();
     if (!created_TCB)
@@ -73,7 +77,7 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
     }
     
 
-    TCB_Initial_Setup(created_TCB, sp, task_function, task_param, hook_function, hook_param, hook_flags);
+    TCB_Initial_Setup(created_TCB, sp, task_function, task_param, priority, hook_function, hook_param, hook_flags);
     
     // created_TCB->saved_sp = (uint32_t*) ( (uint8_t*) sp + HEAP_BLOCK_SIZE ); // TODO => Make stack allocation part of port
 
