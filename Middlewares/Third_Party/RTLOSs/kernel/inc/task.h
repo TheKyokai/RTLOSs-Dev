@@ -5,6 +5,7 @@
 #include "list.h"
 #include "enum_defs.h"
 #include "semaphore.h"
+#include "mutex.h"
 
 
 typedef void Task_Function(void *);
@@ -43,6 +44,9 @@ struct TCB
     Semaphore* waited_sem; // Reordering causes proteus fatal error
     SEM_STATUS sem_status;
     uint8_t timed_wait;
+
+    // Mutex related
+    Mutex* waited_mutex;
 
     uint8_t hook_call_flags;
 };

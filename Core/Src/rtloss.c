@@ -6,6 +6,7 @@ void RTLOSs_Init()
     Port_Heap_Init();
     Scheduler_Init();
     Semaphore_Init();
+    Mutex_Init();
 }
 
 

@@ -59,6 +59,7 @@ Middlewares/Third_Party/RTLOSs/kernel/src/list.c \
 Middlewares/Third_Party/RTLOSs/kernel/src/scheduler.c \
 Middlewares/Third_Party/RTLOSs/kernel/src/task.c \
 Middlewares/Third_Party/RTLOSs/kernel/src/semaphore.c \
+Middlewares/Third_Party/RTLOSs/kernel/src/mutex.c \
 Middlewares/Third_Party/RTLOSs/kernel/src/timer.c \
 Middlewares/Third_Party/RTLOSs/portable/ARM_CORTEX_M3/src/heap.c \
 Middlewares/Third_Party/RTLOSs/portable/ARM_CORTEX_M3/src/port.c \

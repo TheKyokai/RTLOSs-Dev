@@ -138,6 +138,7 @@ int Task_SysTick_Tick()
 {   
     Scheduler_Sleep_Update();
     Semaphore_Tick_Update();
+    Mutex_Tick_Update();
     ++Current_TCB_Tick_Count;
     if (Current_TCB_Tick_Count >= config_TASK_TICK_TIMESLICE)
         return 1;
