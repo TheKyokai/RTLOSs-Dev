@@ -13,7 +13,7 @@ void Mutex_Init()
 int Mutex_Create(Mutex_t *handle, uint32_t initial_val)
 {
     if (!handle)    return 1;
-    Mutex* created_mutex = (Mutex*) Port_Alloc();
+    Mutex* created_mutex = (Mutex*) Heap_Alloc(sizeof(Mutex));
 
     if (!created_mutex)
         return 2;

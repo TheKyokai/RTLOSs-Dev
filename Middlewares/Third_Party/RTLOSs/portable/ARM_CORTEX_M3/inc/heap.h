@@ -1,5 +1,5 @@
-#ifndef PORT_HEAP_H
-#define PORT_HEAP_H
+#ifndef HEAP_H
+#define HEAP_H
 
 #include "stdint.h"
 #include "stddef.h"
@@ -36,8 +36,8 @@ struct TLSF_FBHE    // Free block header extension
 
 
 
-void Port_Heap_Init();
-void* Port_Alloc(size_t size);
-void Port_Free(void* block);
+void Heap_Init();
+void* Heap_Alloc(size_t size);
+void Heap_Free(void* block);
 
 #endif

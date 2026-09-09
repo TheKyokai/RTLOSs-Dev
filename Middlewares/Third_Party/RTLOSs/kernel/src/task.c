@@ -31,7 +31,7 @@ int TCB_Initial_Setup(TCB* tcb, void* sp, Task_Function* task_function, void* ta
     if (!tcb || !sp)
         return 1;
 
-    tcb->saved_sp = (uint32_t*) ( (uint8_t*) sp + HEAP_BLOCK_SIZE ); // TODO => Make stack allocation part of port
+    tcb->saved_sp = (uint32_t*) ( (uint8_t*) sp + config_DEFAULT_STACK_SIZE );
 
     tcb->task_function = task_function;
     tcb->task_param = task_param;
@@ -65,14 +65,14 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
     if (priority > config_MAX_TASK_PRIORITY)
         return 4;
     
-    TCB* created_TCB = (TCB*) Port_Alloc();
+    TCB* created_TCB = (TCB*) Heap_Alloc(sizeof(TCB));
     if (!created_TCB)
         return 1;
     
-    void* sp = Port_Alloc();
+    void* sp = Heap_Alloc(config_DEFAULT_STACK_SIZE);
     if (!sp)
     {
-        Port_Free(created_TCB);
+        Heap_Free(created_TCB);
         return 2;
     }
     
@@ -111,7 +111,9 @@ int Task_Create_Task(Task_t* handle, Task_Function* task_function, void* task_pa
 
 int Task_Delete(Task_t tcb)
 {
+    
     tcb->status = TASK_DELETED;
+    // Trigger context switch if needed and remove from scheduler
     if (tcb == TCB_Current)
         // Trigger context switch
         return 1;

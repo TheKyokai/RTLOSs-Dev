@@ -31,7 +31,48 @@ static inline void map_find(size_t size, int* f_out, int* s_out)
 }
 
 
-void Port_Heap_Init()
+static inline void remove_free_block(TLSF_Header* block)
+{
+    int f, s;
+    map_insert(HEAP_TRUE_SIZE(block->size), &f, &s);
+    TLSF_FBHE* ext = (TLSF_FBHE*) (block + 1);
+
+    if (ext->prev)
+        ((TLSF_FBHE*) (ext->prev + 1))->next = ext->next;
+    else
+        free_block_map[f][s] = ext->next;      // block was the head
+
+    if (ext->next)
+        ((TLSF_FBHE*) (ext->next + 1))->prev = ext->prev;
+
+    if (!free_block_map[f][s])
+    {
+        sl_bitmap[f] &= ~(1U << s);
+        if (!sl_bitmap[f])
+            fl_bitmap &= ~(1U << f);
+    }
+}
+
+
+static inline void insert_free_block(TLSF_Header* block)
+{
+    int f, s;
+    map_insert(HEAP_TRUE_SIZE(block->size), &f, &s);
+    TLSF_FBHE* ext = (TLSF_FBHE*) (block + 1);
+
+    ext->prev = NULL;
+    ext->next = free_block_map[f][s];
+    if (free_block_map[f][s])
+        ((TLSF_FBHE*) (free_block_map[f][s] + 1))->prev = block;
+    free_block_map[f][s] = block;
+
+    fl_bitmap |= (1U << f);
+    sl_bitmap[f] |= (1U << s);
+}
+
+
+
+void Heap_Init()
 {
     
     size_t usable = sizeof(heap) - sizeof(TLSF_Header);
@@ -65,7 +106,7 @@ static inline int fallback_block_search_and_split(size_t size, int* f, int* s)
     else 
     {
         // First-level check
-        uint32_t fl_map = fl_bitmap & (~0U << *f);
+        uint32_t fl_map = fl_bitmap & (~0U << (*f + 1));
         if (fl_map)
         {
             *f = __builtin_ctz(fl_map);
@@ -80,31 +121,10 @@ static inline int fallback_block_search_and_split(size_t size, int* f, int* s)
     {
         // Split block
         TLSF_Header* original_block = free_block_map[*f][*s];
-        TLSF_FBHE* original_extension = (TLSF_FBHE*) (original_block + 1);
-
-        // Remove original block
-        free_block_map[*f][*s] = original_extension->next;
-        if (original_extension->next)
-        {
-            TLSF_FBHE* next_extension = (TLSF_FBHE*) (original_extension->next + 1);
-            next_extension->prev = NULL;
-        }
-
-        original_extension->next = NULL;
-        original_extension->prev = NULL;
-
-        // Bitmap clearing
-        if (!free_block_map[*f][*s])
-        {
-            sl_bitmap[*f] &= ~(1U << *s);
-            if (!sl_bitmap[*f])
-                fl_bitmap &= ~(1U << *f);
-        }
-
+        remove_free_block(original_block);
 
         // Split original block
-        TLSF_Header* new_block = (TLSF_Header*) (((uint8_t*) original_block) + sizeof(TLSF_Header) + HEAP_TRUE_SIZE(original_block->size));
-        TLSF_FBHE* new_extension = (TLSF_FBHE*) (new_block + 1);
+        TLSF_Header* new_block = (TLSF_Header*) (((uint8_t*) original_block) + sizeof(TLSF_Header) + size);
 
         new_block->size = (leftover - sizeof(TLSF_Header)) | HEAP_FREE_FLAG | (original_block->size & HEAP_LAST_FLAG);
         original_block->size = size | HEAP_FREE_FLAG;
@@ -118,31 +138,17 @@ static inline int fallback_block_search_and_split(size_t size, int* f, int* s)
             following_block->prev_phys_block = new_block;
         }
 
-        // Insert new blocks
-        int new_f, new_s;
-        map_insert(HEAP_TRUE_SIZE(new_block->size), &new_f, &new_s);
-        if (free_block_map[new_f][new_s])
-            ((TLSF_FBHE*) (free_block_map[new_f][new_s] + 1))->prev = new_block;
-        new_extension->next = free_block_map[new_f][new_s];
-        new_extension->prev = NULL;
-        free_block_map[new_f][new_s] = new_block;
+        insert_free_block(new_block);
+        insert_free_block(original_block);
 
+        // Report back where original_block ended up so the caller can pop it
         map_insert(HEAP_TRUE_SIZE(original_block->size), f, s);
-        if (free_block_map[*f][*s])
-            ((TLSF_FBHE*) (free_block_map[*f][*s] + 1))->prev = original_block;
-        original_extension->next = free_block_map[*f][*s];
-        original_extension->prev = NULL;
-        free_block_map[*f][*s] = original_block;
-
-        fl_bitmap |= (1U << new_f) | (1U << *f);
-        sl_bitmap[new_f] |= (1U << new_s);
-        sl_bitmap[*f] |= (1U << *s);
     }
 
     return 0;
 }
 
-void* Port_Alloc(size_t size)
+void* Heap_Alloc(size_t size)
 {
     if (!size)  return NULL;
     Port_Disable_Interrupts();
@@ -193,7 +199,59 @@ void* Port_Alloc(size_t size)
     return (selected_block? (void*) (selected_block + 1) : NULL);
 }
 
-void Port_Free(void* block)
+
+
+// Merges two blocks if they are both free and physical neighbours
+static inline void merge_blocks(TLSF_Header* first, TLSF_Header* second)
+{
+    if (!first || !second || first == second) return;
+
+    if ((first->size & HEAP_FREE_FLAG) && (second->size & HEAP_FREE_FLAG) 
+        && (first == second->prev_phys_block || first->prev_phys_block == second))
+    {
+        remove_free_block(first);
+        remove_free_block(second);
+        TLSF_Header *kept, *merged;
+        if (first == second->prev_phys_block)
+        {
+            kept = first;
+            merged = second;
+        }
+        else
+        {
+            kept = second;
+            merged = first;
+        }
+
+
+        // Fix up physical block after merged if it exists
+        if (!(merged->size & HEAP_LAST_FLAG))
+        {
+            TLSF_Header* after = (TLSF_Header*) (((uint8_t*) merged) + sizeof(TLSF_Header) + HEAP_TRUE_SIZE(merged->size));
+            after->prev_phys_block = kept;
+        }
+
+        kept->size = (HEAP_TRUE_SIZE(kept->size) + sizeof(TLSF_Header) + HEAP_TRUE_SIZE(merged->size)) | HEAP_FREE_FLAG | (merged->size & HEAP_LAST_FLAG);
+
+        insert_free_block(kept);
+    }
+}
+
+void Heap_Free(void* block)
 {   
+    if (!block) return;
+    Port_Disable_Interrupts();
     
+    TLSF_Header* freed_block = ((TLSF_Header*) block) - 1;
+    freed_block->size |= HEAP_FREE_FLAG;
+    insert_free_block(freed_block);
+
+    TLSF_Header* next = (TLSF_Header*)(((uint8_t*)freed_block) + sizeof(TLSF_Header) + HEAP_TRUE_SIZE(freed_block->size));
+    TLSF_Header* prev = freed_block->prev_phys_block;
+    
+    if (!(freed_block->size & HEAP_LAST_FLAG))
+        merge_blocks(freed_block, next);
+    merge_blocks(prev, freed_block);
+    
+    Port_Enable_Interrupts();
 }

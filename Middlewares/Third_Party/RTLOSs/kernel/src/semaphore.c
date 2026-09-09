@@ -13,7 +13,7 @@ void Semaphore_Init()
 int Semaphore_Create(Semaphore_t *handle, uint32_t initial_val)
 {
     if (!handle)    return 1;
-    Semaphore* created_semaphore = (Semaphore*) Port_Alloc();
+    Semaphore* created_semaphore = (Semaphore*) Heap_Alloc(sizeof(Semaphore));
 
     if (!created_semaphore)
         return 2;

@@ -20,14 +20,14 @@ int Timer_Create_Timer(Timer_t* handle, Timer_Function* timer_function, void* ti
     if (!handle || !timer_function)
         return 1;
     
-    Timer* created_timer = (Timer*) Port_Alloc();
+    Timer* created_timer = (Timer*) Heap_Alloc(sizeof(Timer));
     if (!created_timer)
         return 2;
     
-    void* sp = Port_Alloc();
+    void* sp = Heap_Alloc(config_DEFAULT_STACK_SIZE);
     if (!sp)
     {
-        Port_Free(created_timer);
+        Heap_Free(created_timer);
         return 3;
     }
 
