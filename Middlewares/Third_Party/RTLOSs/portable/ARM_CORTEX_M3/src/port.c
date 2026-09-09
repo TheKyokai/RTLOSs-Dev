@@ -1,7 +1,6 @@
 #include "port.h"
 #include "task.h"
 #include "scheduler.h"
-#include "stm32f1xx.h"
 #include "RTLOSs_config.h"
 
 
@@ -93,7 +92,7 @@ void PendSV_Handler( void )
         "   isb                                     \n"
         "                                           \n"
         "   bx r14                                  \n"     // LR return
-        ::"i"(5 << 4) // Max syscall priority => Make macro later
+        ::"i"(PORT_MAX_SYSCALL_PRIORITY << 4) // Max syscall priority => Make macro later
     );
 }
 
@@ -122,24 +121,31 @@ void Port_Disable_Interrupts()
 }
 
 
-static void Port_Start_Kernel_Timer()
+
+static inline void Port_Interrupt_Priority_Setup()
 {
-    SysTick->LOAD = ( config_CPU_CLOCK_HZ / config_TICK_HZ) - 1U;
-    SysTick->VAL = 0U;
+    SCB_SHPR_SVCALL = SVC_PRIORITY;
+    SCB_SHPR_PENDSV = PENDSV_PRIORITY;
+    SCB_SHPR_SYSTICK = SYSTICK_PRIORITY;
+}
+
+static inline void Port_Start_Kernel_Timer()
+{
+    SYSTICK_LOAD = ( config_CPU_CLOCK_HZ / config_TICK_HZ) - 1U;
+    SYSTICK_VAL = 0U;
     
-    SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_CLKSOURCE_Msk;
+    SYSTICK_CTRL = SYSTICK_CTRL_ENABLE_MASK | SYSTICK_CTRL_TICKINT_MASK | SYSTICK_CTRL_CLKSOURCE_MASK;
 }
 
 
 void Port_Start_Scheduler()
 {
-    
+    Port_Interrupt_Priority_Setup();
     Port_Start_Kernel_Timer();
     
     Start_Task_Execution();
     // Control should never reach this
 }
-
 
 
 // RTOS timer interrupt
@@ -157,5 +163,5 @@ void SysTick_Handler( void )
 
 inline void Port_Yield()
 {
-    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+    SCB_ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }
