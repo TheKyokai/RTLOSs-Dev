@@ -11,7 +11,7 @@
 #define PORT_MAX_TIMEOUT UINT32_MAX
 
 // Priority
-#define PORT_MAX_SYSCALL_PRIORITY 5
+#define PORT_MAX_SYSCALL_PRIORITY 2
 #define SVC_PRIORITY 1
 #define SYSTICK_PRIORITY 2
 #define PENDSV_PRIORITY 15
@@ -37,10 +37,54 @@
 #define SCB_SHPR_SYSTICK            (*(volatile uint8_t*) 0xE000ED23)   // SHPR3[31:24]
 
 
+// SVCall Codes
+
+// Heap
+
+#define SVC_HEAP_ALLOC      ( 0x0 )
+#define SVC_HEAP_FREE       ( 0x1 )
+
+// Task
+
+#define SVC_TASK_CREATE     ( 0x10 )
+#define SVC_TASK_DELETE     ( 0x11 )
+#define SVC_TASK_YIELD      ( 0x12 )
+#define SVC_TASK_SLEEP      ( 0x13 )
+
+
+// Timer
+
+#define SVC_TIMER_CREATE        ( 0x40 )
+
+
+// Semaphore
+
+#define SVC_SEMAPHORE_CREATE    ( 0x20 )
+#define SVC_SEMAPHORE_ACQUIRE   ( 0x21 )
+#define SVC_SEMAPHORE_RELEASE   ( 0x22 )
+#define SVC_SEMAPHORE_DELETE    ( 0x23 )
+
+
+// Mutex
+
+#define SVC_MUTEX_CREATE        ( 0x30 )
+#define SVC_MUTEX_ACQUIRE       ( 0x31 )
+#define SVC_MUTEX_RELEASE       ( 0x32 )
+#define SVC_MUTEX_DELETE        ( 0x33 )
+
+
+// Queue
+
+
+
+
 
 void Port_Init_Task_Stack(TCB* tcb);
 void Port_Start_Scheduler();
 void Port_Yield();
+
+uint32_t Port_Syscall(uint32_t syscall_code, void* args);
+void Port_WFI();
 
 void Port_Enable_Interrupts();
 void Port_Disable_Interrupts();

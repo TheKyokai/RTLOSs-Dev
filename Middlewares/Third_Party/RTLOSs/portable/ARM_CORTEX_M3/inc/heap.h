@@ -37,7 +37,24 @@ struct TLSF_FBHE    // Free block header extension
 
 
 void Heap_Init();
+
+// Part of the API
 void* Heap_Alloc(size_t size);
 void Heap_Free(void* block);
+
+// Privileged
+void* HEAP_Alloc(size_t size);
+void HEAP_Free(void* block);
+
+// Syscall arg structs
+struct HEAP_Alloc_args
+{
+        size_t size;
+};
+
+struct HEAP_Free_args
+{
+        void* block;
+};
 
 #endif

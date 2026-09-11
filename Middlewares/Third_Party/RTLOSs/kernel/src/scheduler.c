@@ -48,14 +48,15 @@ void Scheduler_Put(TCB* tcb)
 
 void Scheduler_Sleep_Update()
 {
-    if (List_Empty(&scheduler.asleep_queue))  return;
+    if (!scheduler.asleep_queue.head)  return;
 
     TCB* tcb = (TCB*) List_Peek_Front(&scheduler.asleep_queue);
     tcb->timeout--;
     while (tcb && tcb->timeout == 0)
     {
         List_Remove_Front(&scheduler.asleep_queue);
-        tcb->status = TASK_READY;
+        if (tcb->status == TASK_BLOCKED)
+            tcb->status = TASK_READY;
         Scheduler_Put(tcb);
         tcb = (TCB*) List_Peek_Front(&scheduler.asleep_queue);
     }

@@ -5,6 +5,11 @@
 #include "task.h"
 #include "stdint.h"
 
+/*
+    API     - Timer_*
+    SYSCALL - TIM_*
+*/
+
 
 typedef void Timer_Function(void*);
 
@@ -18,12 +23,29 @@ struct Timer
     uint32_t period;
     TIMER_STATUS status;
 
-    TCB timer_task;
+    Task_t timer_task;
 };
 
-
+// Part of the API
 int Timer_Create_Timer(Timer_t* handle, Timer_Function* timer_function, void* timer_param, uint32_t period);
 int Timer_Delete(Timer_t handle);
+
+
+// Used by SysCall
+
+int TIM_Create_Timer(Timer_t* handle, Timer_Function* timer_function, void* timer_param, uint32_t period);
+// Timer_Delete has no SysCall counterpart - only sets a status flag, no shared state to protect
+
+
+// Syscall arg structs
+
+struct TIM_Create_args
+{
+        Timer_t* handle;
+        Timer_Function* timer_function;
+        void* timer_param;
+        uint32_t period;
+};
 
 
 #endif

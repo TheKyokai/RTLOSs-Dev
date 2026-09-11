@@ -148,7 +148,7 @@ static inline int fallback_block_search_and_split(size_t size, int* f, int* s)
     return 0;
 }
 
-void* Heap_Alloc(size_t size)
+void* HEAP_Alloc(size_t size)
 {
     if (!size)  return NULL;
     Port_Disable_Interrupts();
@@ -199,6 +199,12 @@ void* Heap_Alloc(size_t size)
     return (selected_block? (void*) (selected_block + 1) : NULL);
 }
 
+void* Heap_Alloc(size_t size)
+{
+    struct HEAP_Alloc_args args = { size };
+    return (void*) Port_Syscall(SVC_HEAP_ALLOC, &args);
+}
+
 
 
 // Merges two blocks if they are both free and physical neighbours
@@ -237,8 +243,8 @@ static inline void merge_blocks(TLSF_Header* first, TLSF_Header* second)
     }
 }
 
-void Heap_Free(void* block)
-{   
+void HEAP_Free(void* block)
+{
     if (!block) return;
     Port_Disable_Interrupts();
     
@@ -252,6 +258,12 @@ void Heap_Free(void* block)
     if (!(freed_block->size & HEAP_LAST_FLAG))
         merge_blocks(freed_block, next);
     merge_blocks(prev, freed_block);
-    
+
     Port_Enable_Interrupts();
+}
+
+void Heap_Free(void* block)
+{
+    struct HEAP_Free_args args = { block };
+    Port_Syscall(SVC_HEAP_FREE, &args);
 }

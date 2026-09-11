@@ -15,7 +15,7 @@ struct List
     List_Node *head, *tail;
 };
 
-typedef int List_Comparison_Function(void* first, List_Node* node);
+typedef int List_Comparison_Function(void* current, void* other);
 
 
 void List_Init(List* list);

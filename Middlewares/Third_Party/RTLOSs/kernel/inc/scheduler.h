@@ -5,6 +5,9 @@
 #include "task.h"
 #include "RTLOSs_config.h"
 
+
+// Should NEVER be directly interacted with by the user, NOT A PART OF THE API
+
 typedef struct Scheduler Scheduler;
 
 struct Scheduler

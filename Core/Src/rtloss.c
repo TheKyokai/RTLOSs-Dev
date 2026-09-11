@@ -1,12 +1,14 @@
 #include "scheduler.h"
 #include "heap.h"
+#include "hook.h"
 
 void RTLOSs_Init()
 {
     Heap_Init();
     Scheduler_Init();
-    Semaphore_Init();
-    Mutex_Init();
+    SEM_Init();
+    MTX_Init();
+    Hook_Init();
 }
 
 

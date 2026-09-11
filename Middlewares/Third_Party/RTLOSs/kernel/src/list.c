@@ -39,7 +39,28 @@ void List_Insert_Back(List* list, List_Node* node)
 
 void List_Insert_Sorted(List* list, List_Node* node, List_Comparison_Function* comp)
 {
+    if (!list || !node || !comp) return;
 
+    List_Node* current_node = list->head;
+    while (current_node && comp(node->data, current_node->data) >= 0)
+        current_node = current_node->next;
+
+    if (!current_node)
+    {
+        List_Insert_Back(list, node);
+        return;
+    }
+
+    if (current_node == list->head)
+    {
+        List_Insert_Front(list, node);
+        return;
+    }
+
+    node->prev = current_node->prev;
+    node->next = current_node;
+    current_node->prev->next = node;
+    current_node->prev = node;
 }
 
 

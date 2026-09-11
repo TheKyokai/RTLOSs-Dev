@@ -2,6 +2,7 @@
 #include "heap.h"
 #include "scheduler.h"
 #include "RTLOSs_config.h"
+#include "port.h"
 
 
 
@@ -13,22 +14,31 @@ void Timer_Task_Wrapper(void* timer_param)
         timer->function(timer->param);
         Task_Sleep(timer->period);
     }
+    Heap_Free(timer);
 }
 
-int Timer_Create_Timer(Timer_t* handle, Timer_Function* timer_function, void* timer_param, uint32_t period)
+int TIM_Create_Timer(Timer_t* handle, Timer_Function* timer_function, void* timer_param, uint32_t period)
 {
     if (!handle || !timer_function)
         return 1;
-    
-    Timer* created_timer = (Timer*) Heap_Alloc(sizeof(Timer));
+
+    Timer* created_timer = (Timer*) HEAP_Alloc(sizeof(Timer));
     if (!created_timer)
         return 2;
-    
-    void* sp = Heap_Alloc(config_DEFAULT_STACK_SIZE);
+
+    created_timer->timer_task = (TCB*) HEAP_Alloc(sizeof(TCB));
+    if (!created_timer->timer_task)
+    {
+        HEAP_Free(created_timer);
+        return 3;
+    }
+
+    void* sp = HEAP_Alloc(config_DEFAULT_STACK_SIZE);
     if (!sp)
     {
-        Heap_Free(created_timer);
-        return 3;
+        HEAP_Free(created_timer->timer_task);
+        HEAP_Free(created_timer);
+        return 4;
     }
 
     created_timer->function = timer_function;
@@ -36,13 +46,19 @@ int Timer_Create_Timer(Timer_t* handle, Timer_Function* timer_function, void* ti
     created_timer->period = period;
     created_timer->status = TIMER_STARTED;
 
-    TCB_Initial_Setup(&created_timer->timer_task, sp, Timer_Task_Wrapper, created_timer, config_TIMER_TASK_PRIORITY, NULL, NULL, 0);
+    TCB_Initial_Setup(created_timer->timer_task, sp, Timer_Task_Wrapper, created_timer, config_TIMER_TASK_PRIORITY, NULL, NULL, 0);
 
-    Scheduler_Put(&created_timer->timer_task);
+    Scheduler_Put(created_timer->timer_task);
 
     *handle = created_timer;
 
     return 0;
+}
+
+int Timer_Create_Timer(Timer_t* handle, Timer_Function* timer_function, void* timer_param, uint32_t period)
+{
+    struct TIM_Create_args args = { handle, timer_function, timer_param, period };
+    return (int) Port_Syscall(SVC_TIMER_CREATE, &args);
 }
 
 

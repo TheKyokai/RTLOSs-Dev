@@ -16,4 +16,8 @@
 
 #define config_DEFAULT_STACK_SIZE   ( 1 << 8 )
 
+// Hook runner - runs switch-in/switch-out/end hooks in thread mode instead of PendSV
+#define config_HOOK_QUEUE_SIZE      8
+#define config_HOOK_TASK_PRIORITY   ( config_IDLE_TASK_PRIORITY - 1 )
+
 #endif
